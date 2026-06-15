@@ -400,7 +400,7 @@ function setStatus(msg, color){
 function gSignIn(){
   var client = google.accounts.oauth2.initTokenClient({
     client_id: CLIENT_ID,
-    scope: SCOPE + ' https://www.googleapis.com/auth/drive.file profile email',
+    scope: 'https://www.googleapis.com/auth/drive.appdata profile email',
     callback: function(resp){
       if(resp.error){ setStatus('❌ فشل تسجيل الدخول','#F87171'); return; }
       gToken = resp.access_token;
@@ -452,7 +452,7 @@ function applyData(src){
 }
 
 function gFindFile(cb){
-  fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'" + DRIVE_FILE_NAME + "'+and+trashed%3Dfalse&spaces=drive&fields=files(id,name)", {
+  fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'" + DRIVE_FILE_NAME + "'&spaces=appDataFolder&fields=files(id,name)", {
     headers: { Authorization: 'Bearer ' + gToken }
   }).then(function(r){ return r.json(); }).then(function(d){
     if(d.files && d.files.length > 0){ gFileId = d.files[0].id; cb(gFileId); }
@@ -496,7 +496,7 @@ function gSaveNow(){
     }).catch(function(){ setStatus('❌ فشل الحفظ','#F87171'); });
   } else {
     // Create new file
-    var meta = JSON.stringify({name: DRIVE_FILE_NAME, mimeType: 'application/json'});
+    var meta = JSON.stringify({name: DRIVE_FILE_NAME, mimeType: 'application/json', parents: ['appDataFolder']});
     var form = new FormData();
     form.append('metadata', new Blob([meta], {type:'application/json'}));
     form.append('file', blob);
