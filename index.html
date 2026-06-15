@@ -143,6 +143,42 @@ td{padding:7px 9px;vertical-align:middle}
 </style>
 </head>
 <body>
+
+<!-- ═══ LOGIN PAGE ═══ -->
+<div id="loginPage" style="display:flex;min-height:100vh;align-items:center;justify-content:center;background:linear-gradient(135deg,#1A1A2E,#16213E);padding:20px">
+  <div style="background:#0F172A;border:1px solid #B8860B;border-radius:16px;padding:32px 28px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:2.5rem;margin-bottom:8px">🏗️</div>
+      <h1 style="color:#D4A017;font-size:1.2rem;font-weight:900;margin-bottom:4px">نظام الاستثمار العقاري</h1>
+      <p style="color:#64748B;font-size:.75rem">إدارة صفقات شراء وبيع الأراضي</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div>
+        <label style="font-size:.72rem;color:#94A3B8;font-weight:600;display:block;margin-bottom:5px">👤 اسم المستخدم</label>
+        <input id="loginUser" type="text" placeholder="username" dir="ltr"
+          style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:8px;padding:10px 12px;color:#fff;font-family:Cairo,sans-serif;font-size:.9rem;outline:none"
+          onfocus="this.style.borderColor='#B8860B'" onblur="this.style.borderColor='#334155'"
+          onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+      </div>
+      <div>
+        <label style="font-size:.72rem;color:#94A3B8;font-weight:600;display:block;margin-bottom:5px">🔒 كلمة المرور</label>
+        <input id="loginPass" type="password" placeholder="password" dir="ltr"
+          style="width:100%;background:#1E293B;border:1px solid #334155;border-radius:8px;padding:10px 12px;color:#fff;font-family:Cairo,sans-serif;font-size:.9rem;outline:none"
+          onfocus="this.style.borderColor='#B8860B'" onblur="this.style.borderColor='#334155'"
+          onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div id="loginErr" style="color:#F87171;font-size:.75rem;text-align:center;display:none">❌ اسم المستخدم أو كلمة المرور غلط</div>
+      <button onclick="doLogin()"
+        style="background:linear-gradient(135deg,#B8860B,#D4A017);border:none;border-radius:8px;padding:12px;color:#1A1A2E;font-family:Cairo,sans-serif;font-size:.95rem;font-weight:900;cursor:pointer;margin-top:4px">
+        دخول ←
+      </button>
+    </div>
+    <p style="text-align:center;color:#334155;font-size:.65rem;margin-top:20px">نظام خاص — غير مرخص للعموم</p>
+  </div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div id="mainApp" style="display:none">
 <header>
   <div class="logo"><h1>🏗️ نظام الاستثمار العقاري</h1><p>إدارة صفقات شراء وبيع الأراضي</p></div>
   <div id="hdate"></div>
@@ -160,18 +196,10 @@ td{padding:7px 9px;vertical-align:middle}
 <div class="page active" id="page-deals">
   <div class="save-bar">
     <span>☁️</span>
-    <div id="sbSignInBox" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <input id="sbEmail" type="email" placeholder="الإيميل" style="background:rgba(255,255,255,.1);border:1px solid var(--gold);border-radius:6px;padding:5px 9px;color:#fff;font-family:Cairo,sans-serif;font-size:.75rem;outline:none;width:160px" dir="ltr">
-      <input id="sbPass" type="password" placeholder="كلمة المرور" style="background:rgba(255,255,255,.1);border:1px solid var(--gold);border-radius:6px;padding:5px 9px;color:#fff;font-family:Cairo,sans-serif;font-size:.75rem;outline:none;width:130px" dir="ltr">
-      <button class="sv-btn" onclick="sbSignIn()" style="background:#4285F4;color:#fff">دخول</button>
-      <button class="sv-btn" onclick="sbSignUp()" style="background:#065F46;color:#fff">تسجيل جديد</button>
-    </div>
-    <div id="sbUserBox" style="display:none;align-items:center;gap:8px;flex-wrap:wrap">
-      <span id="sbUserEmail" style="font-size:.72rem;color:#D4A017;font-weight:700"></span>
-      <button class="sv-btn" onclick="sbSave()" style="background:#065F46;color:#fff">☁️ حفظ</button>
-      <button class="sv-btn" onclick="sbSignOut()" style="background:#64748B;color:#fff;font-size:.65rem">خروج</button>
-    </div>
-    <span id="sbStatus" class="sv-hint">سجّل دخولك لحفظ البيانات</span>
+    <span style="font-size:.75rem;color:#D4A017;font-weight:700">👤 <span id="sbUserEmail">admin</span></span>
+    <button class="sv-btn" onclick="sbSave()" style="background:#065F46;color:#fff">☁️ حفظ</button>
+    <button class="sv-btn" onclick="doLogout()" style="background:#64748B;color:#fff;font-size:.65rem">خروج</button>
+    <span id="sbStatus" class="sv-hint"></span>
   </div>
 
   <div class="settings-bar">
@@ -386,7 +414,8 @@ var CAT_CLR={salary:'#7C3AED',rent:'#EA580C',util:'#0EA5E9',market:'#EC4899',tra
 var TYPE_MAP={current:'جاري',saving:'توفير',deposit:'وديعة'};
 var TYPE_CLR={current:'#3B82F6',saving:'#10B981',deposit:'#F59E0B'};
 
-// ═══ SUPABASE AUTH & STORAGE ═══
+// ═══ AUTH & STORAGE ═══
+var USERS = { 'admin': 'admin@@123' };
 var sbUser = null;
 
 function setSbStatus(msg, color){
@@ -416,90 +445,40 @@ function applyData(src){
   if(src.p2pct) document.getElementById('p2pct').value=src.p2pct;
 }
 
-function showUserBox(email){
-  document.getElementById('sbSignInBox').style.display = 'none';
-  var box = document.getElementById('sbUserBox');
-  box.style.display = 'flex';
-  document.getElementById('sbUserEmail').textContent = email;
-}
-
-function sbSignIn(){
-  var email = document.getElementById('sbEmail').value.trim();
-  var pass = document.getElementById('sbPass').value;
-  if(!email||!pass){ setSbStatus('ادخل الإيميل وكلمة المرور','#F87171'); return; }
-  setSbStatus('🔄 جاري تسجيل الدخول...','#FBBF24');
-  sb.auth.signInWithPassword({email:email, password:pass}).then(function(res){
-    if(res.error){ setSbStatus('❌ '+res.error.message,'#F87171'); return; }
-    sbUser = res.data.user;
-    showUserBox(sbUser.email);
-    setSbStatus('🔄 جاري تحميل بياناتك...','#FBBF24');
-    sbLoad();
-  });
-}
-
-function sbSignUp(){
-  var email = document.getElementById('sbEmail').value.trim();
-  var pass = document.getElementById('sbPass').value;
-  if(!email||!pass){ setSbStatus('ادخل الإيميل وكلمة المرور','#F87171'); return; }
-  if(pass.length < 6){ setSbStatus('كلمة المرور 6 أحرف على الأقل','#F87171'); return; }
-  setSbStatus('🔄 جاري إنشاء الحساب...','#FBBF24');
-  sb.auth.signUp({email:email, password:pass}).then(function(res){
-    if(res.error){ setSbStatus('❌ '+res.error.message,'#F87171'); return; }
-    sbUser = res.data.user;
-    showUserBox(email);
-    setSbStatus('✅ تم إنشاء الحساب! جاهز للحفظ','#4ADE80');
-    render();
-  });
-}
-
-function sbSignOut(){
-  sb.auth.signOut().then(function(){
-    sbUser = null;
-    deals=[]; nid=1; banks=[]; bnid=1; expenses=[]; enid=1;
-    document.getElementById('sbUserBox').style.display = 'none';
-    document.getElementById('sbSignInBox').style.display = 'flex';
-    setSbStatus('تم تسجيل الخروج','#94A3B8');
-    render();
-  });
-}
-
 function sbLoad(){
   if(!sbUser) return;
-  sb.from('user_data').select('data').eq('user_id', sbUser.id).single().then(function(res){
-    if(res.error && res.error.code !== 'PGRST116'){
-      setSbStatus('⚠️ فشل التحميل: '+res.error.message,'#F87171'); return;
-    }
+  setSbStatus('🔄 جاري التحميل...','#FBBF24');
+  sb.from('user_data').select('data').eq('user_id', sbUser).single().then(function(res){
     deals=[]; nid=1; banks=[]; bnid=1; expenses=[]; enid=1;
     if(res.data){ applyData(res.data.data); }
     render();
-    setSbStatus(res.data ? '✅ تم تحميل بياناتك' : '☁️ لا توجد بيانات — جاهز للحفظ','#4ADE80');
+    setSbStatus(res.data ? '✅ تم التحميل' : '☁️ جاهز للحفظ','#4ADE80');
   });
 }
 
 function sbSave(){
-  if(!sbUser){ setSbStatus('سجّل دخولك أولاً','#F87171'); return; }
+  if(!sbUser){ return; }
   setSbStatus('🔄 جاري الحفظ...','#FBBF24');
-  var dataObj = getDataObj();
-  sb.from('user_data').upsert({user_id: sbUser.id, data: dataObj, updated_at: new Date().toISOString()}, {onConflict:'user_id'}).then(function(res){
-    if(res.error){ setSbStatus('❌ فشل الحفظ: '+res.error.message,'#F87171'); return; }
-    setSbStatus('✅ تم الحفظ على السحابة','#4ADE80');
+  sb.from('user_data').upsert({user_id: sbUser, data: getDataObj(), updated_at: new Date().toISOString()},{onConflict:'user_id'}).then(function(res){
+    if(res.error){ setSbStatus('❌ فشل الحفظ','#F87171'); return; }
+    setSbStatus('✅ تم الحفظ','#4ADE80');
     toast('✅ تم الحفظ!');
   });
 }
 
 function autoSave(){
-  if(sbUser){ sbSave(); }
+  if(sbUser) sbSave();
 }
 
-// Check existing session on load
-sb.auth.getSession().then(function(res){
-  if(res.data && res.data.session){
-    sbUser = res.data.session.user;
-    showUserBox(sbUser.email);
-    setSbStatus('🔄 جاري تحميل بياناتك...','#FBBF24');
-    sbLoad();
-  }
-});
+function doLogout(){
+  sbUser = null;
+  sessionStorage.removeItem('sb_user');
+  deals=[]; nid=1; banks=[]; bnid=1; expenses=[]; enid=1;
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+}
+
+// session handled at bottom
 
 document.getElementById('hdate').textContent=new Date().toLocaleDateString('ar-EG',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
 document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
@@ -748,7 +727,8 @@ function printDeal(id){
   var cost=d.buy+(d.fees||0),isSold=(d.stat==='sold')&&d.sell>0,profit=isSold?d.sell-cost:0,sh=isSold?calcShares(profit):{com:0,net:0,p1:0,p2:0};
   var sM={sold:'مباعة',held:'محتفظ بها',reserved:'محجوزة'},roi=cost>0&&isSold?((profit/cost)*100).toFixed(1):0;
   var html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;direction:rtl;padding:24px;color:#1E293B}h1{font-size:1.2rem;color:#B8860B;border-bottom:2px solid #B8860B;padding-bottom:6px;margin-bottom:14px}h2{font-size:.88rem;background:#F1F5F9;padding:6px 10px;border-radius:5px;margin:12px 0 6px}.row{display:flex;justify-content:space-between;padding:5px 3px;border-bottom:1px solid #E2E8F0;font-size:.85rem}.lbl{color:#64748B;font-weight:600}.val{font-weight:700;direction:ltr}.pv{color:#16A34A}.com{color:#D97706}.p1{color:#7C3AED}.p2{color:#EA580C}.ft{margin-top:20px;text-align:center;color:#94A3B8;font-size:.68rem}@media print{@page{margin:1cm}}</style></head><body>'
-    +'<h1>🏗️ تقرير صفقة — '+d.name+'</h1><h2>📋 بيانات الصفقة</h2><div class="row"><span class="lbl">اسم القطعة</span><span class="val">'+d.name+'</span></div>'+(d.loc?'<div class="row"><span class="lbl">الموقع</span><span class="val">'+d.loc+'</span></div>':'')+(d.area?'<div class="row"><span class="lbl">المساحة</span><span class="val">'+d.area.toLocaleString()+' م²</span></div>':'')+'<div class="row"><span class="lbl">تاريخ الشراء</span><span class="val">'+(d.date?d.date.split('-').reverse().join('/'):'—')+'</span></div><div class="row"><span class="lbl">الحالة</span><span class="val">'+sM[d.stat]+'</span></div><h2>💰 التكاليف</h2><div class="row"><span class="lbl">سعر الشراء</span><span class="val">'+fmt(d.buy)+'</span></div>'+(d.fees?'<div class="row"><span class="lbl">مصاريف</span><span class="val">'+fmt(d.fees)+'</span></div>':'')+'<div class="row"><span class="lbl">التكلفة الإجمالية</span><span class="val">'+fmt(cost)+'</span></div>'+(isSold?'<h2>📈 نتائج البيع</h2><div class="row"><span class="lbl">تاريخ البيع</span><span class="val">'+(d.sellDate?d.sellDate.split('-').reverse().join('/'):'—')+'</span></div><div class="row"><span class="lbl">سعر البيع</span><span class="val">'+fmt(d.sell)+'</span></div><div class="row"><span class="lbl">الربح الكلي</span><span class="val pv">'+fmt(profit)+'</span></div><div class="row"><span class="lbl">نسبة العائد</span><span class="val pv">'+roi+'%</span></div><h2>🤝 توزيع الأرباح</h2><div class="row"><span class="lbl">عمولة الوسيط</span><span class="val com">'+fmt(sh.com)+'</span></div><div class="row"><span class="lbl">صافي الربح</span><span class="val">'+fmt(sh.net)+'</span></div><div class="row"><span class="lbl">الشريك الأول</span><span class="val p1">'+fmt(sh.p1)+'</span></div><div class="row"><span class="lbl">الشريك الثاني</span><span class="val p2">'+fmt(sh.p2)+'</span></div>':'')+'<div class="ft">تاريخ الطباعة: '+new Date().toLocaleDateString('ar-EG')+'</div><script>window.onload=function(){window.print();window.onfocus=function(){window.close();}}<\/script></body></html>';
+    +'<h1>🏗️ تقرير صفقة — '+d.name+'</h1><h2>📋 بيانات الصفقة</h2><div class="row"><span class="lbl">اسم القطعة</span><span class="val">'+d.name+'</span></div>'+(d.loc?'<div class="row"><span class="lbl">الموقع</span><span class="val">'+d.loc+'</span></div>':'')+(d.area?'<div class="row"><span class="lbl">المساحة</span><span class="val">'+d.area.toLocaleString()+' م²</span></div>':'')+'<div class="row"><span class="lbl">تاريخ الشراء</span><span class="val">'+(d.date?d.date.split('-').reverse().join('/'):'—')+'</span></div><div class="row"><span class="lbl">الحالة</span><span class="val">'+sM[d.stat]+'</span></div><h2>💰 التكاليف</h2><div class="row"><span class="lbl">سعر الشراء</span><span class="val">'+fmt(d.buy)+'</span></div>'+(d.fees?'<div class="row"><span class="lbl">مصاريف</span><span class="val">'+fmt(d.fees)+'</span></div>':'')+'<div class="row"><span class="lbl">التكلفة الإجمالية</span><span class="val">'+fmt(cost)+'</span></div>'+(isSold?'<h2>📈 نتائج البيع</h2><div class="row"><span class="lbl">تاريخ البيع</span><span class="val">'+(d.sellDate?d.sellDate.split('-').reverse().join('/'):'—')+'</span></div><div class="row"><span class="lbl">سعر البيع</span><span class="val">'+fmt(d.sell)+'</span></div><div class="row"><span class="lbl">الربح الكلي</span><span class="val pv">'+fmt(profit)+'</span></div><div class="row"><span class="lbl">نسبة العائد</span><span class="val pv">'+roi+'%</span></div><h2>🤝 توزيع الأرباح</h2><div class="row"><span class="lbl">عمولة الوسيط</span><span class="val com">'+fmt(sh.com)+'</span></div><div class="row"><span class="lbl">صافي الربح</span><span class="val">'+fmt(sh.net)+'</span></div><div class="row"><span class="lbl">الشريك الأول</span><span class="val p1">'+fmt(sh.p1)+'</span></div><div class="row"><span class="lbl">الشريك الثاني</span><span class="val p2">'+fmt(sh.p2)+'</span></div>':'')+'<div class="ft">تاريخ الطباعة: '+new Date().toLocaleDateString('ar-EG')+'</div><script>window.onload=function(){window.print();window.onfocus=function(){window.close();}}<\/script></div><!-- /mainApp -->
+</body></html>';
   var w=window.open('','_blank');if(w){w.document.write(html);w.document.close();}else{alert('فعّل النوافذ المنبثقة');}
 }
 function printPartners(){
@@ -756,11 +736,41 @@ function printPartners(){
   deals.forEach(function(d){if((d.stat==='sold')&&d.sell>0){var cost=d.buy+(d.fees||0),pr=d.sell-cost,sh=calcShares(pr);tProfit+=pr;tCom+=sh.com;tNet+=sh.net;tP1+=sh.p1;tP2+=sh.p2;tSold++;rows+='<tr><td>'+d.name+'</td><td>'+(d.sellDate?d.sellDate.split('-').reverse().join('/'):'—')+'</td><td style="direction:ltr;text-align:right">'+fmt(pr)+'</td><td style="direction:ltr;text-align:right;color:#D97706">'+fmt(sh.com)+'</td><td style="direction:ltr;text-align:right">'+fmt(sh.net)+'</td><td style="direction:ltr;text-align:right;color:#7C3AED">'+fmt(sh.p1)+'</td><td style="direction:ltr;text-align:right;color:#EA580C">'+fmt(sh.p2)+'</td></tr>';}});
   if(!tSold){alert('لا توجد صفقات مباعة');return;}
   var html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;direction:rtl;padding:20px;color:#1E293B}h1{font-size:1.1rem;color:#B8860B;border-bottom:2px solid #B8860B;padding-bottom:6px;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}.box{border:1px solid #CBD5E1;border-radius:6px;padding:8px 11px;border-top-width:3px}.bl{font-size:.65rem;color:#64748B;font-weight:600;margin-bottom:2px}.bv{font-size:.88rem;font-weight:900;direction:ltr;text-align:right}table{width:100%;border-collapse:collapse;font-size:.78rem}th{background:#1A1A2E;color:#D4A017;padding:6px 8px;text-align:right}td{padding:5px 8px;border-bottom:1px solid #E2E8F0}tr:nth-child(even){background:#F8FAFC}.tot td{background:#1A1A2E;color:#fff;font-weight:700}.ft{margin-top:16px;text-align:center;color:#94A3B8;font-size:.65rem}@media print{@page{margin:1cm;size:A4 landscape}}</style></head><body>'
-    +'<h1>💼 كشف حساب الشركاء</h1><div class="grid"><div class="box" style="border-top-color:#16A34A"><div class="bl">إجمالي الأرباح</div><div class="bv" style="color:#16A34A">'+fmt(tProfit)+'</div></div><div class="box" style="border-top-color:#F59E0B"><div class="bl">عمولة الوسيط</div><div class="bv" style="color:#D97706">'+fmt(tCom)+'</div></div><div class="box" style="border-top-color:#10B981"><div class="bl">صافي الأرباح</div><div class="bv">'+fmt(tNet)+'</div></div><div class="box" style="border-top-color:#7C3AED"><div class="bl">الشريك الأول</div><div class="bv" style="color:#7C3AED">'+fmt(tP1)+'</div></div><div class="box" style="border-top-color:#EA580C"><div class="bl">الشريك الثاني</div><div class="bv" style="color:#EA580C">'+fmt(tP2)+'</div></div><div class="box" style="border-top-color:#3B82F6"><div class="bl">الصفقات المباعة</div><div class="bv" style="color:#3B82F6">'+tSold+' صفقة</div></div></div><table><thead><tr><th>الصفقة</th><th>تاريخ البيع</th><th>الربح</th><th>الوسيط</th><th>صافي</th><th>ش.أول</th><th>ش.ثاني</th></tr></thead><tbody>'+rows+'<tr class="tot"><td>الإجمالي</td><td>'+tSold+' صفقة</td><td style="direction:ltr;text-align:right">'+fmt(tProfit)+'</td><td style="direction:ltr;text-align:right;color:#FCD34D">'+fmt(tCom)+'</td><td style="direction:ltr;text-align:right">'+fmt(tNet)+'</td><td style="direction:ltr;text-align:right;color:#C4B5FD">'+fmt(tP1)+'</td><td style="direction:ltr;text-align:right;color:#FDBA74">'+fmt(tP2)+'</td></tr></tbody></table><div class="ft">تاريخ الطباعة: '+new Date().toLocaleDateString('ar-EG')+'</div><script>window.onload=function(){window.print();window.onfocus=function(){window.close();}}<\/script></body></html>';
+    +'<h1>💼 كشف حساب الشركاء</h1><div class="grid"><div class="box" style="border-top-color:#16A34A"><div class="bl">إجمالي الأرباح</div><div class="bv" style="color:#16A34A">'+fmt(tProfit)+'</div></div><div class="box" style="border-top-color:#F59E0B"><div class="bl">عمولة الوسيط</div><div class="bv" style="color:#D97706">'+fmt(tCom)+'</div></div><div class="box" style="border-top-color:#10B981"><div class="bl">صافي الأرباح</div><div class="bv">'+fmt(tNet)+'</div></div><div class="box" style="border-top-color:#7C3AED"><div class="bl">الشريك الأول</div><div class="bv" style="color:#7C3AED">'+fmt(tP1)+'</div></div><div class="box" style="border-top-color:#EA580C"><div class="bl">الشريك الثاني</div><div class="bv" style="color:#EA580C">'+fmt(tP2)+'</div></div><div class="box" style="border-top-color:#3B82F6"><div class="bl">الصفقات المباعة</div><div class="bv" style="color:#3B82F6">'+tSold+' صفقة</div></div></div><table><thead><tr><th>الصفقة</th><th>تاريخ البيع</th><th>الربح</th><th>الوسيط</th><th>صافي</th><th>ش.أول</th><th>ش.ثاني</th></tr></thead><tbody>'+rows+'<tr class="tot"><td>الإجمالي</td><td>'+tSold+' صفقة</td><td style="direction:ltr;text-align:right">'+fmt(tProfit)+'</td><td style="direction:ltr;text-align:right;color:#FCD34D">'+fmt(tCom)+'</td><td style="direction:ltr;text-align:right">'+fmt(tNet)+'</td><td style="direction:ltr;text-align:right;color:#C4B5FD">'+fmt(tP1)+'</td><td style="direction:ltr;text-align:right;color:#FDBA74">'+fmt(tP2)+'</td></tr></tbody></table><div class="ft">تاريخ الطباعة: '+new Date().toLocaleDateString('ar-EG')+'</div><script>window.onload=function(){window.print();window.onfocus=function(){window.close();}}<\/script></div><!-- /mainApp -->
+</body></html>';
   var w=window.open('','_blank');if(w){w.document.write(html);w.document.close();}else{alert('فعّل النوافذ المنبثقة');}
 }
 
-render();
+function doLogin(){
+  var user = document.getElementById('loginUser').value.trim();
+  var pass = document.getElementById('loginPass').value;
+  var err = document.getElementById('loginErr');
+  if(USERS[user] && USERS[user] === pass){
+    sbUser = user;
+    sessionStorage.setItem('sb_user', user);
+    document.getElementById('sbUserEmail').textContent = user;
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    err.style.display = 'none';
+    sbLoad();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('loginPass').value = '';
+  }
+}
+
+// Check session on load
+var _sess = sessionStorage.getItem('sb_user');
+if(_sess && USERS[_sess]){
+  sbUser = _sess;
+  document.getElementById('sbUserEmail').textContent = sbUser;
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  sbLoad();
+} else {
+  render();
+}
 </script>
+</div><!-- /mainApp -->
 </body>
 </html>
