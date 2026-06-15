@@ -415,7 +415,6 @@ var TYPE_MAP={current:'جاري',saving:'توفير',deposit:'وديعة'};
 var TYPE_CLR={current:'#3B82F6',saving:'#10B981',deposit:'#F59E0B'};
 
 // ═══ AUTH & STORAGE ═══
-var USERS = { 'admin': 'admin@@123' };
 var sbUser = null;
 
 function setSbStatus(msg, color){
@@ -743,7 +742,18 @@ function doLogin(){
   var user = document.getElementById('loginUser').value.trim();
   var pass = document.getElementById('loginPass').value;
   var err = document.getElementById('loginErr');
-  if(USERS[user] && USERS[user] === pass){
+  var btn = document.querySelector('#loginPage button');
+  if(!user||!pass){ err.style.display='block'; return; }
+  btn.textContent = '...جاري التحقق';
+  btn.disabled = true;
+  sb.rpc('check_admin', {p_username: user, p_password: pass}).then(function(res){
+    btn.textContent = 'دخول ←';
+    btn.disabled = false;
+    if(res.error || !res.data){
+      err.style.display = 'block';
+      document.getElementById('loginPass').value = '';
+      return;
+    }
     sbUser = user;
     sessionStorage.setItem('sb_user', user);
     document.getElementById('sbUserEmail').textContent = user;
@@ -751,15 +761,16 @@ function doLogin(){
     document.getElementById('mainApp').style.display = 'block';
     err.style.display = 'none';
     sbLoad();
-  } else {
+  }).catch(function(){
+    btn.textContent = 'دخول ←';
+    btn.disabled = false;
     err.style.display = 'block';
-    document.getElementById('loginPass').value = '';
-  }
+  });
 }
 
 // Check session on load
 var _sess = sessionStorage.getItem('sb_user');
-if(_sess && USERS[_sess]){
+if(_sess){
   sbUser = _sess;
   document.getElementById('sbUserEmail').textContent = sbUser;
   document.getElementById('loginPage').style.display = 'none';
