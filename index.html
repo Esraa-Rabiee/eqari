@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="عقاري">
+<meta name="theme-color" content="#1A1A2E">
+<title>نظام الاستثمار العقاري</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --dark:#1A1A2E;--dark2:#16213E;--gold:#B8860B;--gold-lt:#D4A017;
+  --profit:#16A34A;--loss:#DC2626;--p1:#7C3AED;--p2:#EA580C;
+  --neutral:#64748B;--text:#1E293B;--border:#CBD5E1;--bg:#F8FAFC;
+  --input:#FFFBEB;--white:#FFFFFF;--lgray:#F1F5F9;
+}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;direction:rtl;-webkit-tap-highlight-color:transparent}
+header{background:linear-gradient(135deg,var(--dark2),var(--dark));padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--gold)}
+.logo h1{font-size:1.05rem;font-weight:900;color:var(--gold-lt)}
+.logo p{font-size:.62rem;color:#94A3B8;margin-top:1px}
+#hdate{color:#94A3B8;font-size:.68rem}
+.tabs{display:flex;background:var(--dark);border-bottom:2px solid var(--gold);padding:0 8px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:10px 12px;cursor:pointer;color:#94A3B8;font-weight:700;font-size:.75rem;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tab.active{color:var(--gold-lt);border-bottom-color:var(--gold-lt)}
+.page{display:none;padding:12px 14px}
+.page.active{display:block}
+
+/* SAVE BAR */
+.save-bar{background:var(--dark2);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.save-bar span{color:var(--gold-lt);font-size:.78rem;font-weight:700}
+.sv-btn{border:none;border-radius:7px;padding:7px 14px;font-family:'Cairo',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer}
+.sv-save{background:var(--gold);color:var(--dark)}
+.sv-load{background:#1D4ED8;color:#fff}
+.sv-hint{font-size:.65rem;color:#94A3B8;margin-right:auto}
+
+/* SETTINGS */
+.settings-bar{background:var(--dark2);border-radius:10px;padding:10px 12px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.settings-bar .stitle{color:var(--gold-lt);font-weight:700;font-size:.75rem;flex-shrink:0}
+.cfg{display:flex;align-items:center;gap:4px}
+.cfg label{font-size:.68rem;color:#CBD5E1;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.cfg input[type=number]{width:46px;background:rgba(0,0,0,.5);border:1px solid var(--gold);border-radius:5px;padding:4px 5px;color:#F59E0B;font-family:'Cairo',sans-serif;font-weight:700;font-size:.82rem;text-align:center;outline:none}
+.upd-btn{background:var(--gold);border:none;border-radius:6px;padding:5px 10px;color:var(--dark);font-family:'Cairo',sans-serif;font-weight:700;font-size:.72rem;cursor:pointer}
+
+/* PORTFOLIO */
+.portfolio{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:9px;margin-bottom:12px}
+.pf-card{background:var(--dark2);border-radius:9px;padding:10px 12px}
+.pf-label{font-size:.58rem;color:#94A3B8;font-weight:600;margin-bottom:3px}
+.pf-val{font-size:.88rem;font-weight:900;direction:ltr;text-align:right}
+
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.card{background:var(--white);border:1px solid var(--border);border-radius:9px;padding:9px 11px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;right:0;width:3px;height:100%}
+.card.c1::before{background:var(--gold)}.card.c2::before{background:#3B82F6}
+.card.c3::before{background:var(--profit)}.card.c4::before{background:#F59E0B}
+.card.c5::before{background:var(--p1)}.card.c6::before{background:var(--p2)}
+.card-label{font-size:.58rem;color:var(--neutral);font-weight:600;margin-bottom:3px}
+.card-val{font-size:.82rem;font-weight:900;direction:ltr;text-align:right}
+.card.c3 .card-val{color:var(--profit)}.card.c4 .card-val{color:#D97706}
+.card.c5 .card-val{color:var(--p1)}.card.c6 .card-val{color:var(--p2)}
+
+/* FORM */
+.form-card{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.form-head{background:var(--dark2);padding:9px 14px;display:flex;align-items:center;justify-content:space-between}
+.form-head span{color:var(--gold-lt);font-weight:700;font-size:.82rem}
+.form-cancel{background:rgba(255,255,255,.15);border:none;border-radius:5px;padding:3px 9px;color:#fff;font-family:'Cairo',sans-serif;font-size:.72rem;cursor:pointer;display:none}
+.form-body{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.field{display:flex;flex-direction:column;gap:3px}
+.field.full{grid-column:1/-1}
+.field label{font-size:.68rem;color:var(--neutral);font-weight:600}
+.field input,.field select{background:var(--input);border:1px solid var(--border);border-radius:6px;padding:7px 9px;color:var(--text);font-family:'Cairo',sans-serif;font-size:.82rem;outline:none;direction:rtl;width:100%}
+.field input[type=number]{direction:ltr;text-align:right}
+.field input:focus,.field select:focus{border-color:var(--gold)}
+select option{background:#fff}
+.btn-add{background:linear-gradient(135deg,var(--gold),var(--gold-lt));border:none;border-radius:8px;padding:10px;color:var(--dark);font-family:'Cairo',sans-serif;font-size:.88rem;font-weight:900;cursor:pointer;width:100%;grid-column:1/-1}
+.btn-add.edit-mode{background:linear-gradient(135deg,#1D4ED8,#2563EB);color:#fff}
+
+/* TABLE */
+.tbl-wrap{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.tbl-head{background:var(--dark2);padding:9px 14px;display:flex;align-items:center;justify-content:space-between}
+.tbl-head span{color:var(--gold-lt);font-weight:700;font-size:.82rem}
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:.74rem;min-width:680px}
+thead tr{background:var(--dark)}
+th{padding:7px 9px;text-align:right;color:var(--gold-lt);font-weight:700;font-size:.65rem;white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--lgray)}
+tbody tr:nth-child(even){background:#FAFBFD}
+tbody tr.editing{background:#EFF6FF!important;border-right:3px solid #2563EB}
+td{padding:7px 9px;vertical-align:middle}
+.dn{font-weight:700;color:var(--text)}.ds{font-size:.62rem;color:var(--neutral);margin-top:1px}
+.num{direction:ltr;text-align:right;font-weight:600;white-space:nowrap}
+.pv{color:var(--profit)}.lv{color:var(--loss)}.nv{color:var(--neutral)}
+.p1v{color:var(--p1)}.p2v{color:var(--p2)}
+.badge{display:inline-block;padding:1px 7px;border-radius:20px;font-size:.6rem;font-weight:700}
+.bs{background:rgba(22,163,74,.12);color:var(--profit)}.bh{background:rgba(245,158,11,.12);color:#D97706}.br{background:rgba(59,130,246,.12);color:#2563EB}
+.act-btns{display:flex;gap:3px}
+.edit-btn{background:none;border:1px solid #3B82F6;color:#3B82F6;padding:3px 6px;border-radius:4px;cursor:pointer;font-size:.62rem;font-family:'Cairo',sans-serif}
+.del-btn{background:none;border:1px solid var(--border);color:var(--neutral);padding:3px 6px;border-radius:4px;cursor:pointer;font-size:.62rem;font-family:'Cairo',sans-serif}
+.pm{display:flex;flex-direction:column;gap:2px}
+.pm-r{display:flex;align-items:center;gap:3px;font-size:.62rem}
+.pm-d{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.empty{text-align:center;padding:30px;color:var(--neutral);font-size:.82rem}
+.empty i{font-size:1.6rem;display:block;margin-bottom:6px}
+
+/* SUMMARY */
+.sum-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.sum-box{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.sum-box-head{padding:9px 14px;font-weight:700;font-size:.82rem;color:#fff}
+.sum-box-body{padding:11px 14px}
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--lgray)}
+.sum-row:last-child{border:none}
+.sum-lbl{display:flex;align-items:center;gap:5px;font-size:.76rem}
+.sum-val{font-weight:800;font-size:.85rem;direction:ltr}
+
+/* REPORTS */
+.rep-box{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:11px}
+.rep-title{font-size:.82rem;font-weight:700;color:var(--dark2);margin-bottom:10px}
+.rth{padding:6px 9px;text-align:right;background:var(--dark);color:#D4A017;font-size:.64rem;font-weight:700;white-space:nowrap}
+.rtd{padding:6px 9px;text-align:right;border-bottom:1px solid var(--lgray);font-size:.7rem}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:11px}
+
+/* BANKS & EXPENSES */
+.item-card{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:11px 13px;margin-bottom:9px}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#065F46;color:#fff;font-family:'Cairo',sans-serif;font-weight:700;font-size:.82rem;padding:8px 20px;border-radius:30px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+
+@media print{
+  .tabs,.save-bar,.settings-bar,.form-card,.act-btns,#hdate{display:none!important}
+  .page{display:block!important;padding:0!important}
+  .tbl-scroll{overflow:visible!important}
+  table{min-width:unset!important;font-size:.65rem}
+  th,td{padding:4px 6px!important}
+  @page{margin:1cm;size:A4 landscape}
+}
+@media(max-width:500px){.sum-grid,.charts-row{grid-template-columns:1fr}.cards{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><h1>🏗️ نظام الاستثمار العقاري</h1><p>إدارة صفقات شراء وبيع الأراضي</p></div>
+  <div id="hdate"></div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('deals',this)">🏘️ الصفقات</div>
+  <div class="tab" onclick="showTab('banks',this)">🏦 البنوك</div>
+  <div class="tab" onclick="showTab('expenses',this)">💸 المصاريف</div>
+  <div class="tab" onclick="showTab('summary',this)">💼 الشركاء</div>
+  <div class="tab" onclick="showTab('reports',this)">📊 التقارير</div>
+</div>
+
+<!-- ═══ DEALS ═══ -->
+<div class="page active" id="page-deals">
+  <div class="save-bar">
+    <span>☁️</span>
+    <button class="sv-btn" id="gSignInBtn" onclick="gSignIn()" style="background:#4285F4;color:#fff;display:flex;align-items:center;gap:6px">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#fff" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#fff" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fff" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#fff" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      تسجيل الدخول بـ Google
+    </button>
+    <div id="gUserInfo" style="display:none;align-items:center;gap:8px">
+      <img id="gUserAvatar" style="width:26px;height:26px;border-radius:50%;border:2px solid var(--gold)" src="" alt="">
+      <span id="gUserName" style="font-size:.72rem;color:#D4A017;font-weight:700"></span>
+      <button class="sv-btn" onclick="gSaveNow()" style="background:#065F46;color:#fff">☁️ حفظ الآن</button>
+      <button class="sv-btn" onclick="gSignOut()" style="background:#64748B;color:#fff;font-size:.65rem">خروج</button>
+    </div>
+    <span id="gStatus" class="sv-hint">سجّل دخولك لحفظ البيانات على Google Drive</span>
+  </div>
+
+  <div class="settings-bar">
+    <span class="stitle">⚙️ النسب</span>
+    <div class="cfg"><div class="dot" style="background:#F59E0B"></div><label>وسيط%</label><input type="number" id="compct" value="15" min="0" max="100"></div>
+    <div class="cfg"><div class="dot" style="background:var(--p1)"></div><label>ش.أول%</label><input type="number" id="p1pct" value="50" min="0" max="100"></div>
+    <div class="cfg"><div class="dot" style="background:var(--p2)"></div><label>ش.ثاني%</label><input type="number" id="p2pct" value="50" min="0" max="100"></div>
+    <div class="cfg"><div class="dot" style="background:#10B981"></div><label>رأس المال</label><input type="number" id="capitalInput" value="20000000" min="0" style="width:80px"></div>
+    <button class="upd-btn" onclick="render()">تحديث</button>
+  </div>
+
+  <div class="portfolio">
+    <div class="pf-card"><div class="pf-label">💰 رأس المال</div><div class="pf-val" style="color:#10B981" id="pCapital">—</div></div>
+    <div class="pf-card"><div class="pf-label">🏦 صافي البنوك</div><div class="pf-val" style="color:#60A5FA" id="pBank">—</div></div>
+    <div class="pf-card"><div class="pf-label">🏘️ قطع في المحفظة</div><div class="pf-val" style="color:#FBBF24" id="pUnsold">—</div></div>
+    <div class="pf-card"><div class="pf-label">💼 تكلفة المحفظة</div><div class="pf-val" style="color:#F87171" id="pPortfolioCost">—</div></div>
+    <div class="pf-card"><div class="pf-label">🤝 إجمالي عمولة الوسيط</div><div class="pf-val" style="color:#F59E0B" id="pTotalCom">—</div></div>
+  </div>
+
+  <div class="cards">
+    <div class="card c1"><div class="card-label">إجمالي التكلفة</div><div class="card-val" id="cCost">—</div></div>
+    <div class="card c2"><div class="card-label">إجمالي المبيعات</div><div class="card-val" id="cSell">—</div></div>
+    <div class="card c3"><div class="card-label">الأرباح</div><div class="card-val" id="cProfit">—</div></div>
+    <div class="card c4"><div class="card-label">عمولة الوسيط</div><div class="card-val" id="cCom">—</div></div>
+    <div class="card c5"><div class="card-label">الشريك الأول</div><div class="card-val" id="cP1">—</div></div>
+    <div class="card c6"><div class="card-label">الشريك الثاني</div><div class="card-val" id="cP2">—</div></div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-head">
+      <span id="formTitle">➕ إضافة صفقة</span>
+      <button class="form-cancel" id="cancelEdit" onclick="cancelEdit()">✕ إلغاء</button>
+    </div>
+    <div class="form-body">
+      <input type="hidden" id="editId" value="">
+      <div class="field"><label>اسم القطعة *</label><input type="text" id="fName" placeholder="قطعة 15 – أكتوبر"></div>
+      <div class="field"><label>الموقع</label><input type="text" id="fLoc" placeholder="المنطقة..."></div>
+      <div class="field"><label>تاريخ الشراء</label><input type="date" id="fDate"></div>
+      <div class="field"><label>المساحة (م²)</label><input type="number" id="fArea" placeholder="0" min="0"></div>
+      <div class="field"><label>سعر الشراء (ج.م) *</label><input type="number" id="fBuy" placeholder="0" min="0"></div>
+      <div class="field"><label>مصاريف ورسوم</label><input type="number" id="fFees" placeholder="0" min="0"></div>
+      <div class="field"><label>سعر البيع (ج.م)</label><input type="number" id="fSell" placeholder="اتركه فاضي" min="0"></div>
+      <div class="field"><label>تاريخ البيع</label><input type="date" id="fSellDate"></div>
+      <div class="field"><label>الحالة</label>
+        <select id="fStatus"><option value="held">محتفظ بها</option><option value="reserved">محجوزة</option><option value="sold">مباعة</option></select>
+      </div>
+      <div class="field"><label>ملاحظات</label><input type="text" id="fNotes" placeholder="ملاحظات..."></div>
+      <button class="btn-add" id="submitBtn" onclick="submitDeal()">✚ إضافة الصفقة</button>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <div class="tbl-head">
+      <span>🏘️ سجل الصفقات</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button onclick="printPartners()" style="background:#7C3AED;border:none;border-radius:5px;padding:4px 8px;color:#fff;font-family:'Cairo',sans-serif;font-weight:700;font-size:.65rem;cursor:pointer">🖨️ كشف شركاء</button>
+        <span id="dealCount" style="color:#94A3B8;font-size:.68rem"></span>
+      </div>
+    </div>
+    <div class="tbl-scroll" id="tWrap"><div class="empty"><i>📭</i>أضف أول صفقة!</div></div>
+  </div>
+</div>
+
+<!-- ═══ BANKS ═══ -->
+<div class="page" id="page-banks">
+  <h2 style="font-size:.9rem;font-weight:900;color:var(--dark2);margin-bottom:11px">🏦 الحسابات البنكية</h2>
+  <div style="background:linear-gradient(135deg,var(--dark2),var(--dark));border-radius:10px;padding:13px 15px;margin-bottom:12px;border:1px solid var(--gold);display:flex;justify-content:space-between;align-items:center">
+    <div><div style="font-size:.62rem;color:#94A3B8;margin-bottom:3px">💰 إجمالي الأرصدة</div><div style="font-size:1.2rem;font-weight:900;color:var(--gold-lt);direction:ltr" id="bankTotal">0 ج.م</div></div>
+    <div style="text-align:left"><div style="font-size:.62rem;color:#94A3B8;margin-bottom:3px">عدد الحسابات</div><div style="font-size:1rem;font-weight:900;color:#60A5FA" id="bankCount">0</div></div>
+  </div>
+  <div class="form-card">
+    <div class="form-head"><span id="bankFormTitle">➕ إضافة حساب بنكي</span><button class="form-cancel" id="cancelBankEdit" onclick="cancelBankEdit()">✕ إلغاء</button></div>
+    <div class="form-body">
+      <input type="hidden" id="bankEditId" value="">
+      <div class="field"><label>اسم البنك *</label><input type="text" id="bName" placeholder="بنك مصر، CIB..."></div>
+      <div class="field"><label>صاحب الحساب</label><input type="text" id="bHolder" placeholder="الاسم"></div>
+      <div class="field"><label>رقم الحساب</label><input type="text" id="bNumber" placeholder="XXXX" style="direction:ltr;text-align:right"></div>
+      <div class="field"><label>نوع الحساب</label>
+        <select id="bType"><option value="current">جاري</option><option value="saving">توفير</option><option value="deposit">وديعة</option></select>
+      </div>
+      <div class="field full"><label>الرصيد الحالي (ج.م) *</label><input type="number" id="bBalance" placeholder="0" min="0"></div>
+      <div class="field full"><label>ملاحظات</label><input type="text" id="bNotes" placeholder="ملاحظات..."></div>
+      <button class="btn-add" id="bankSubmitBtn" onclick="submitBank()">✚ إضافة الحساب</button>
+    </div>
+  </div>
+  <div id="banksList"></div>
+</div>
+
+<!-- ═══ EXPENSES ═══ -->
+<div class="page" id="page-expenses">
+  <h2 style="font-size:.9rem;font-weight:900;color:var(--dark2);margin-bottom:11px">💸 المصاريف</h2>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:11px">
+    <div class="pf-card"><div class="pf-label">💸 مصاريف هذا الشهر</div><div class="pf-val" style="color:#F87171" id="expThisMonth">—</div></div>
+    <div class="pf-card"><div class="pf-label">📅 مصاريف هذه السنة</div><div class="pf-val" style="color:#FCD34D" id="expThisYear">—</div></div>
+    <div class="pf-card"><div class="pf-label">📊 إجمالي المصاريف</div><div class="pf-val" style="color:#C4B5FD" id="expTotal">—</div></div>
+  </div>
+  <div style="display:flex;gap:7px;margin-bottom:11px;flex-wrap:wrap">
+    <select id="expFilterMonth" onchange="renderExpenses()" style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:'Cairo',sans-serif;font-size:.76rem;color:var(--text);outline:none;flex:1;min-width:100px"></select>
+    <select id="expFilterCat" onchange="renderExpenses()" style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:'Cairo',sans-serif;font-size:.76rem;color:var(--text);outline:none;flex:1;min-width:100px">
+      <option value="">كل الفئات</option>
+      <option value="salary">💼 مرتبات</option><option value="rent">🏢 إيجار</option>
+      <option value="util">💡 مرافق</option><option value="market">📣 تسويق</option>
+      <option value="transport">🚗 مواصلات</option><option value="legal">⚖️ قانونية</option><option value="other">📦 أخرى</option>
+    </select>
+  </div>
+  <div class="form-card">
+    <div class="form-head"><span id="expFormTitle">➕ إضافة مصروف</span><button class="form-cancel" id="cancelExpEdit" onclick="cancelExpEdit()">✕ إلغاء</button></div>
+    <div class="form-body">
+      <input type="hidden" id="expEditId" value="">
+      <div class="field"><label>الوصف *</label><input type="text" id="eName" placeholder="مرتب، إيجار..."></div>
+      <div class="field"><label>الفئة</label>
+        <select id="eCat"><option value="salary">💼 مرتبات</option><option value="rent">🏢 إيجار</option><option value="util">💡 مرافق</option><option value="market">📣 تسويق</option><option value="transport">🚗 مواصلات</option><option value="legal">⚖️ قانونية</option><option value="other">📦 أخرى</option></select>
+      </div>
+      <div class="field"><label>المبلغ (ج.م) *</label><input type="number" id="eAmount" placeholder="0" min="0"></div>
+      <div class="field"><label>التاريخ</label><input type="date" id="eDate"></div>
+      <div class="field full"><label>ملاحظات</label><input type="text" id="eNotes" placeholder="ملاحظات..."></div>
+      <button class="btn-add" id="expSubmitBtn" onclick="submitExp()">✚ إضافة المصروف</button>
+    </div>
+  </div>
+  <div id="expList"></div>
+</div>
+
+<!-- ═══ SUMMARY ═══ -->
+<div class="page" id="page-summary">
+  <h2 style="font-size:.9rem;font-weight:900;color:var(--dark2);margin-bottom:11px">💼 ملخص حصص الشركاء</h2>
+  <div class="sum-grid">
+    <div class="sum-box"><div class="sum-box-head" style="background:var(--dark2)">📊 الأرقام الكلية</div>
+      <div class="sum-box-body">
+        <div class="sum-row"><div class="sum-lbl">💰 التكلفة</div><div class="sum-val" id="s-cost">—</div></div>
+        <div class="sum-row"><div class="sum-lbl">🤝 المبيعات</div><div class="sum-val" id="s-sell">—</div></div>
+        <div class="sum-row"><div class="sum-lbl">📈 الربح</div><div class="sum-val pv" id="s-profit">—</div></div>
+        <div class="sum-row"><div class="sum-lbl">🏘️ الصفقات</div><div class="sum-val" id="s-count">—</div></div>
+        <div class="sum-row"><div class="sum-lbl">✅ المباعة</div><div class="sum-val pv" id="s-sold">—</div></div>
+      </div>
+    </div>
+    <div class="sum-box"><div class="sum-box-head" style="background:var(--dark)">🏆 توزيع الأرباح</div>
+      <div class="sum-box-body">
+        <div class="sum-row"><div class="sum-lbl"><span class="dot" style="background:#F59E0B"></span>الوسيط (<span id="s-compct">15</span>%)</div><div class="sum-val" style="color:#D97706" id="s-com">—</div></div>
+        <div class="sum-row"><div class="sum-lbl">↳ صافي</div><div class="sum-val pv" id="s-net">—</div></div>
+        <div class="sum-row"><div class="sum-lbl"><span class="dot" style="background:var(--p1)"></span>ش.أول (<span id="s-p1pct">20</span>%)</div><div class="sum-val p1v" id="s-p1">—</div></div>
+        <div class="sum-row"><div class="sum-lbl"><span class="dot" style="background:var(--p2)"></span>ش.ثاني (<span id="s-p2pct">80</span>%)</div><div class="sum-val p2v" id="s-p2">—</div></div>
+      </div>
+    </div>
+  </div>
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+    <div style="background:var(--gold);padding:9px 14px;font-weight:700;color:var(--dark);font-size:.82rem">📐 آلية الحساب</div>
+    <div style="padding:12px 14px;font-size:.8rem;line-height:1.9">
+      <div>① الربح الكلي = سعر البيع − التكلفة</div>
+      <div>② عمولة الوسيط = الربح × <span id="calc-com">15</span>%</div>
+      <div>③ صافي الربح = الربح − العمولة</div>
+      <div>④ الشريك الأول = صافي × <span id="calc-p1">20</span>%</div>
+      <div>⑤ الشريك الثاني = صافي × <span id="calc-p2">80</span>%</div>
+      <div style="background:var(--lgray);border-radius:6px;padding:7px 10px;font-size:.74rem;color:var(--neutral);margin-top:8px">
+        مثال: ربح 100,000 → وسيط=15,000 | صافي=85,000 | ش.أول=17,000 | ش.ثاني=68,000
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ REPORTS ═══ -->
+<div class="page" id="page-reports">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;flex-wrap:wrap;gap:7px">
+    <h2 style="font-size:.9rem;font-weight:900;color:var(--dark2)">📊 التقارير الشهرية</h2>
+    <div style="display:flex;gap:6px;align-items:center">
+      <select id="rYear" onchange="renderReports()" style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:'Cairo',sans-serif;font-size:.76rem;color:var(--text);outline:none"></select>
+      <button onclick="window.print()" style="background:var(--dark2);border:none;border-radius:6px;padding:5px 10px;color:var(--gold-lt);font-family:'Cairo',sans-serif;font-weight:700;font-size:.72rem;cursor:pointer">🖨️ طباعة</button>
+    </div>
+  </div>
+  <div id="rCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:11px"></div>
+  <div class="charts-row">
+    <div class="rep-box">
+      <div class="rep-title">📈 المبيعات والأرباح شهرياً</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:3px;font-size:.62rem;color:var(--neutral)"><div style="width:8px;height:8px;border-radius:2px;background:#3B82F6"></div>المبيعات</div>
+        <div style="display:flex;align-items:center;gap:3px;font-size:.62rem;color:var(--neutral)"><div style="width:8px;height:8px;border-radius:2px;background:#16A34A"></div>الأرباح</div>
+        <div style="display:flex;align-items:center;gap:3px;font-size:.62rem;color:var(--neutral)"><div style="width:8px;height:8px;border-radius:2px;background:#F59E0B"></div>الوسيط</div>
+      </div>
+      <div id="barChart" style="display:flex;align-items:flex-end;gap:2px;height:100px;border-bottom:2px solid var(--border)"></div>
+      <div id="barLabels" style="display:flex;gap:2px;margin-top:3px"></div>
+    </div>
+    <div class="rep-box">
+      <div class="rep-title">🥧 توزيع الأرباح</div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
+        <svg id="donutSvg" width="110" height="110" viewBox="0 0 160 160"></svg>
+        <div id="donutLegend" style="display:flex;flex-direction:column;gap:5px"></div>
+      </div>
+    </div>
+  </div>
+  <div class="rep-box">
+    <div class="rep-title">📋 جدول تفصيلي شهري</div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table id="rTable" style="width:100%;border-collapse:collapse;font-size:.7rem;min-width:540px"></table>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Google Identity Services -->
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
+// ═══ CONFIG ═══
+var CLIENT_ID = '162410341615-uopdo88crl27tco4rc6q3v48q2086lfm.apps.googleusercontent.com';
+var PAGES_URL = 'https://esraa-rabiee.github.io';
+var DRIVE_FILE_NAME = 'استثمار_عقاري_data.json';
+var SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+
+// ═══ DATA ═══
+var _SAVED_DATA_ = null;
+var deals=[], nid=1, banks=[], bnid=1, expenses=[], enid=1;
+var MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+var CAT_MAP={salary:'💼 مرتبات',rent:'🏢 إيجار',util:'💡 مرافق',market:'📣 تسويق',transport:'🚗 مواصلات',legal:'⚖️ قانونية',other:'📦 أخرى'};
+var CAT_CLR={salary:'#7C3AED',rent:'#EA580C',util:'#0EA5E9',market:'#EC4899',transport:'#10B981',legal:'#F59E0B',other:'#64748B'};
+var TYPE_MAP={current:'جاري',saving:'توفير',deposit:'وديعة'};
+var TYPE_CLR={current:'#3B82F6',saving:'#10B981',deposit:'#F59E0B'};
+
+// ═══ GOOGLE DRIVE ═══
+var gToken = null;
+var gFileId = null;
+var LS_KEY = 'استثمار_عقاري_v1';
+
+function setStatus(msg, color){
+  var s = document.getElementById('gStatus');
+  if(s){ s.textContent = msg; s.style.color = color||'#94A3B8'; }
+}
+
+function gSignIn(){
+  var client = google.accounts.oauth2.initTokenClient({
+    client_id: CLIENT_ID,
+    scope: SCOPE + ' https://www.googleapis.com/auth/drive.file profile email',
+    callback: function(resp){
+      if(resp.error){ setStatus('❌ فشل تسجيل الدخول','#F87171'); return; }
+      gToken = resp.access_token;
+      // Get user info
+      fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: 'Bearer ' + gToken }
+      }).then(function(r){ return r.json(); }).then(function(u){
+        document.getElementById('gSignInBtn').style.display = 'none';
+        var info = document.getElementById('gUserInfo');
+        info.style.display = 'flex';
+        document.getElementById('gUserAvatar').src = u.picture||'';
+        document.getElementById('gUserName').textContent = u.name||u.email||'';
+        setStatus('جاري تحميل البيانات...','#FBBF24');
+        gLoadFromDrive();
+      }).catch(function(){ gLoadFromDrive(); });
+    }
+  });
+  client.requestAccessToken();
+}
+
+function gSignOut(){
+  google.accounts.oauth2.revoke(gToken, function(){});
+  gToken = null; gFileId = null;
+  document.getElementById('gSignInBtn').style.display = '';
+  document.getElementById('gUserInfo').style.display = 'none';
+  setStatus('تم تسجيل الخروج','#94A3B8');
+}
+
+function getDataObj(){
+  return {
+    deals:deals, nid:nid, banks:banks, bnid:bnid,
+    expenses:expenses, enid:enid,
+    capital:parseFloat(document.getElementById('capitalInput').value)||0,
+    compct:parseFloat(document.getElementById('compct').value)||15,
+    p1pct:parseFloat(document.getElementById('p1pct').value)||50,
+    p2pct:parseFloat(document.getElementById('p2pct').value)||50
+  };
+}
+
+function applyData(src){
+  if(!src) return;
+  deals=src.deals||[]; nid=src.nid||1;
+  banks=src.banks||[]; bnid=src.bnid||1;
+  expenses=src.expenses||[]; enid=src.enid||1;
+  if(src.capital) document.getElementById('capitalInput').value=src.capital;
+  if(src.compct) document.getElementById('compct').value=src.compct;
+  if(src.p1pct) document.getElementById('p1pct').value=src.p1pct;
+  if(src.p2pct) document.getElementById('p2pct').value=src.p2pct;
+}
+
+function gFindFile(cb){
+  fetch("https://www.googleapis.com/drive/v3/files?q=name%3D'" + DRIVE_FILE_NAME + "'+and+trashed%3Dfalse&spaces=drive&fields=files(id,name)", {
+    headers: { Authorization: 'Bearer ' + gToken }
+  }).then(function(r){ return r.json(); }).then(function(d){
+    if(d.files && d.files.length > 0){ gFileId = d.files[0].id; cb(gFileId); }
+    else cb(null);
+  }).catch(function(){ cb(null); });
+}
+
+function gLoadFromDrive(){
+  if(!gToken){ return; }
+  setStatus('🔄 جاري تحميل البيانات من Drive...','#FBBF24');
+  // مسح البيانات الحالية أولاً
+  deals=[]; nid=1; banks=[]; bnid=1; expenses=[]; enid=1;
+  render();
+  gFindFile(function(fid){
+    if(!fid){ setStatus('☁️ لا توجد بيانات محفوظة على Drive — جاهز للحفظ','#4ADE80'); render(); return; }
+    fetch('https://www.googleapis.com/drive/v3/files/' + fid + '?alt=media', {
+      headers: { Authorization: 'Bearer ' + gToken }
+    }).then(function(r){ return r.json(); }).then(function(d){
+      applyData(d);
+      render();
+      setStatus('✅ تم التحميل من Google Drive','#4ADE80');
+    }).catch(function(){ setStatus('⚠️ فشل التحميل من Drive','#F87171'); render(); });
+  });
+}
+
+function gSaveNow(){
+  if(!gToken){ autoSave(); return; }
+  setStatus('🔄 جاري الحفظ...','#FBBF24');
+  var body = JSON.stringify(getDataObj());
+  var blob = new Blob([body], {type:'application/json'});
+
+  if(gFileId){
+    // Update existing file
+    fetch('https://www.googleapis.com/upload/drive/v3/files/' + gFileId + '?uploadType=media', {
+      method: 'PATCH',
+      headers: { Authorization: 'Bearer ' + gToken, 'Content-Type': 'application/json' },
+      body: blob
+    }).then(function(r){ return r.json(); }).then(function(){
+      setStatus('✅ تم الحفظ على Google Drive','#4ADE80');
+      toast('✅ تم الحفظ على Google Drive!');
+    }).catch(function(){ setStatus('❌ فشل الحفظ','#F87171'); });
+  } else {
+    // Create new file
+    var meta = JSON.stringify({name: DRIVE_FILE_NAME, mimeType: 'application/json'});
+    var form = new FormData();
+    form.append('metadata', new Blob([meta], {type:'application/json'}));
+    form.append('file', blob);
+    fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + gToken },
+      body: form
+    }).then(function(r){ return r.json(); }).then(function(d){
+      gFileId = d.id;
+      setStatus('✅ تم الحفظ على Google Drive','#4ADE80');
+      toast('✅ تم إنشاء الملف على Google Drive!');
+    }).catch(function(){ setStatus('❌ فشل الحفظ','#F87171'); });
+  }
+}
+
+function autoSave(){
+  if(gToken){ gSaveNow(); }
+  // لو مش مسجّل دخول، لا يحفظ في أي مكان
+}
+
+// تشغيل أولي — بدون تحميل أي بيانات محلية
+// البيانات تيجي من Google Drive فقط بعد تسجيل الدخول
+
+document.getElementById('hdate').textContent=new Date().toLocaleDateString('ar-EG',{weekday:'short',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
+document.getElementById('eDate').value=new Date().toISOString().split('T')[0];
+
+function fmt(n){if(n===null||n===undefined||isNaN(n))return'—';return Math.round(Number(n)).toLocaleString('ar-EG')+' ج.م';}
+
+function calcShares(profit){
+  var com=parseFloat(document.getElementById('compct').value)||0;
+  var p1=parseFloat(document.getElementById('p1pct').value)||0;
+  var p2=parseFloat(document.getElementById('p2pct').value)||0;
+  if(profit<=0)return{com:0,net:profit,p1:0,p2:0};
+  var comV=profit*(com/100),net=profit-comV;
+  return{com:comV,net:net,p1:net*(p1/100),p2:net*(p2/100)};
+}
+
+function toast(msg,color){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=color||'#065F46';
+  t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2500);
+}
+
+function showTab(name,el){
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.getElementById('page-'+name).classList.add('active');el.classList.add('active');
+  if(name==='summary')renderSummary();
+  if(name==='reports'){populateYears();renderReports();}
+  if(name==='banks')renderBanks();
+  if(name==='expenses')renderExpenses();
+}
+
+// ═══ SAVE TO FILE (نسخة احتياطية) ═══
+function saveToFile(){
+  var blob=new Blob([JSON.stringify(getDataObj())],{type:'application/json;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='استثمار_عقاري_backup.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('✅ تم تنزيل النسخة الاحتياطية!');
+}
+
+function importFromFile(e){
+  var file=e.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      var txt=ev.target.result;
+      var m=txt.match(/var _SAVED_DATA_ = (\{[\s\S]*?\});/);
+      if(!m)throw new Error('لا توجد بيانات في هذا الملف');
+      var d=JSON.parse(m[1]);
+      if(!d.deals)throw new Error('بيانات غير صحيحة');
+      if(deals.length>0&&!confirm('سيتم استبدال البيانات الحالية. متأكد؟'))return;
+      deals=d.deals||[];nid=d.nid||1;banks=d.banks||[];bnid=d.bnid||1;expenses=d.expenses||[];enid=d.enid||1;
+      if(d.capital)document.getElementById('capitalInput').value=d.capital;
+      if(d.compct)document.getElementById('compct').value=d.compct;
+      if(d.p1pct)document.getElementById('p1pct').value=d.p1pct;
+      if(d.p2pct)document.getElementById('p2pct').value=d.p2pct;
+      render();autoSave();toast('✅ تم استيراد '+deals.length+' صفقة!');
+    }catch(err){toast('❌ '+err.message,'#DC2626');}
+  };
+  reader.readAsText(file);e.target.value='';
+}
+
+// ═══ DEALS ═══
+function submitDeal(){
+  var editId=document.getElementById('editId').value;
+  var name=document.getElementById('fName').value.trim();
+  var buy=parseFloat(document.getElementById('fBuy').value)||0;
+  if(!name){alert('اكتب اسم القطعة');return;}
+  if(!buy){alert('اكتب سعر الشراء');return;}
+  var data={name:name,loc:document.getElementById('fLoc').value.trim(),date:document.getElementById('fDate').value,area:parseFloat(document.getElementById('fArea').value)||0,buy:buy,fees:parseFloat(document.getElementById('fFees').value)||0,sell:parseFloat(document.getElementById('fSell').value)||0,sellDate:document.getElementById('fSellDate').value,stat:document.getElementById('fStatus').value,notes:document.getElementById('fNotes').value.trim()};
+  if(editId){var id=parseInt(editId);deals=deals.map(function(d){return d.id===id?Object.assign({},d,data):d;});cancelEdit();toast('✏️ تم التعديل!','#1D4ED8');}
+  else{data.id=nid++;deals.push(data);resetForm();toast('✅ تمت الإضافة!');}
+  render();autoSave();
+}
+function editDeal(id){
+  var d=deals.find(function(x){return x.id===id;});if(!d)return;
+  document.getElementById('editId').value=id;
+  document.getElementById('fName').value=d.name||'';document.getElementById('fLoc').value=d.loc||'';
+  document.getElementById('fDate').value=d.date||'';document.getElementById('fArea').value=d.area||'';
+  document.getElementById('fBuy').value=d.buy||'';document.getElementById('fFees').value=d.fees||'';
+  document.getElementById('fSell').value=d.sell||'';document.getElementById('fSellDate').value=d.sellDate||'';
+  document.getElementById('fStatus').value=d.stat||'held';document.getElementById('fNotes').value=d.notes||'';
+  document.getElementById('formTitle').textContent='✏️ تعديل: '+d.name;
+  document.getElementById('submitBtn').textContent='💾 حفظ التعديل';document.getElementById('submitBtn').classList.add('edit-mode');
+  document.getElementById('cancelEdit').style.display='block';
+  document.querySelector('.form-card').scrollIntoView({behavior:'smooth'});render();
+}
+function cancelEdit(){
+  document.getElementById('editId').value='';document.getElementById('formTitle').textContent='➕ إضافة صفقة';
+  document.getElementById('submitBtn').textContent='✚ إضافة الصفقة';document.getElementById('submitBtn').classList.remove('edit-mode');
+  document.getElementById('cancelEdit').style.display='none';resetForm();render();
+}
+function resetForm(){
+  ['fName','fLoc','fArea','fBuy','fFees','fSell','fSellDate','fNotes'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('fStatus').value='held';document.getElementById('fDate').value=new Date().toISOString().split('T')[0];
+}
+function delDeal(id){
+  if(!confirm('حذف هذه الصفقة؟'))return;
+  deals=deals.filter(function(d){return d.id!==id;});render();autoSave();toast('🗑 تم الحذف','#DC2626');
+}
+
+function render(){
+  var wrap=document.getElementById('tWrap');
+  var editingId=document.getElementById('editId').value?parseInt(document.getElementById('editId').value):null;
+  if(!deals.length){wrap.innerHTML='<div class="empty"><i>📭</i>أضف أول صفقة!</div>';document.getElementById('dealCount').textContent='';setCards(0,0,0,0,0,0);return;}
+  var tCost=0,tSell=0,tProfit=0,tCom=0,tP1=0,tP2=0,portfolioCost=0,unsoldCount=0;
+  var bM={sold:'bs',held:'bh',reserved:'br'},lM={sold:'مباعة',held:'محتفظ بها',reserved:'محجوزة'};
+  var rows=deals.map(function(d){
+    var cost=d.buy+(d.fees||0),isSold=(d.stat==='sold')&&(d.sell>0),profit=isSold?d.sell-cost:0,sh=isSold?calcShares(profit):{com:0,net:0,p1:0,p2:0};
+    tCost+=cost;if(isSold){tSell+=d.sell;tProfit+=profit;tCom+=sh.com;tP1+=sh.p1;tP2+=sh.p2;}else{portfolioCost+=cost;unsoldCount++;}
+    var sub=(d.loc||'')+(d.area?(d.loc?' · ':'')+d.area.toLocaleString('ar-EG')+' م²':''),pc=profit>0?'pv':profit<0?'lv':'nv';
+    var pBlock=(isSold&&profit>0)?'<div class="pm"><div class="pm-r"><div class="pm-d" style="background:#F59E0B"></div><span style="color:#D97706">'+fmt(sh.com)+'</span></div><div class="pm-r"><div class="pm-d" style="background:var(--p1)"></div><span class="p1v">'+fmt(sh.p1)+'</span></div><div class="pm-r"><div class="pm-d" style="background:var(--p2)"></div><span class="p2v">'+fmt(sh.p2)+'</span></div></div>':'<span class="nv">—</span>';
+    return '<tr'+(editingId===d.id?' class="editing"':'')+'><td><div class="dn">'+d.name+'</div>'+(sub?'<div class="ds">'+sub+'</div>':'')+(d.notes?'<div class="ds" style="color:#A78BFA">'+d.notes+'</div>':'')+'</td><td>'+(d.date?d.date.split('-').reverse().join('/'):'—')+'</td><td>'+(d.sellDate?d.sellDate.split('-').reverse().join('/'):'—')+'</td><td class="num">'+fmt(cost)+'</td><td class="num '+(isSold?(profit>=0?'pv':'lv'):'nv')+'">'+(isSold?fmt(d.sell):'—')+'</td><td class="num '+pc+'">'+(isSold?(profit>=0?'+':'')+fmt(profit):'—')+'</td><td>'+pBlock+'</td><td><span class="badge '+bM[d.stat]+'">'+lM[d.stat]+'</span></td><td><div class="act-btns"><button class="edit-btn" onclick="editDeal('+d.id+')">✏️</button><button class="edit-btn" style="border-color:#10B981;color:#10B981" onclick="printDeal('+d.id+')">🖨️</button><button class="del-btn" onclick="delDeal('+d.id+')">🗑</button></div></td></tr>';
+  }).join('');
+  wrap.innerHTML='<table><thead><tr><th>القطعة</th><th>ت.الشراء</th><th>ت.البيع</th><th>التكلفة</th><th>سعر البيع</th><th>الربح</th><th>🟡وسيط/🟣ش1/🟠ش2</th><th>الحالة</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  document.getElementById('dealCount').textContent=deals.length+' صفقة';
+  setCards(tCost,tSell,tProfit,tCom,tP1,tP2);
+  var capital=parseFloat(document.getElementById('capitalInput').value)||0;
+  var bankTotal=0;banks.forEach(function(b){bankTotal+=b.balance||0;});
+  var totalExp=0;expenses.forEach(function(e){totalExp+=e.amount||0;});
+  var bankNet=bankTotal-totalExp-portfolioCost;
+  document.getElementById('pCapital').textContent=fmt(capital);
+  document.getElementById('pBank').textContent=fmt(bankNet)+(bankNet<0?' ⚠️':'');
+  document.getElementById('pUnsold').textContent=unsoldCount+' قطعة';
+  document.getElementById('pPortfolioCost').textContent=fmt(portfolioCost);
+  document.getElementById('pTotalCom').textContent=fmt(tCom);
+}
+function setCards(cost,sell,profit,com,p1,p2){
+  document.getElementById('cCost').textContent=fmt(cost);document.getElementById('cSell').textContent=fmt(sell);
+  var pe=document.getElementById('cProfit');pe.textContent=(profit>=0?'+':'')+fmt(profit);pe.style.color=profit>0?'var(--profit)':profit<0?'var(--loss)':'var(--neutral)';
+  document.getElementById('cCom').textContent=com?fmt(com):'—';document.getElementById('cP1').textContent=p1?fmt(p1):'—';document.getElementById('cP2').textContent=p2?fmt(p2):'—';
+}
+
+// ═══ BANKS ═══
+function submitBank(){
+  var editId=document.getElementById('bankEditId').value,name=document.getElementById('bName').value.trim(),balance=parseFloat(document.getElementById('bBalance').value)||0;
+  if(!name){alert('اكتب اسم البنك');return;}
+  var data={name:name,holder:document.getElementById('bHolder').value.trim(),number:document.getElementById('bNumber').value.trim(),type:document.getElementById('bType').value,balance:balance,notes:document.getElementById('bNotes').value.trim(),updated:new Date().toISOString().split('T')[0]};
+  if(editId){var id=parseInt(editId);banks=banks.map(function(b){return b.id===id?Object.assign({},b,data):b;});cancelBankEdit();toast('✏️ تم التعديل!','#1D4ED8');}
+  else{data.id=bnid++;banks.push(data);['bName','bHolder','bNumber','bBalance','bNotes'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('bType').value='current';toast('✅ تمت الإضافة!');}
+  renderBanks();render();autoSave();
+}
+function editBank(id){
+  var b=banks.find(function(x){return x.id===id;});if(!b)return;
+  document.getElementById('bankEditId').value=id;document.getElementById('bName').value=b.name||'';document.getElementById('bHolder').value=b.holder||'';
+  document.getElementById('bNumber').value=b.number||'';document.getElementById('bType').value=b.type||'current';document.getElementById('bBalance').value=b.balance||'';document.getElementById('bNotes').value=b.notes||'';
+  document.getElementById('bankFormTitle').textContent='✏️ تعديل: '+b.name;document.getElementById('bankSubmitBtn').textContent='💾 حفظ';document.getElementById('bankSubmitBtn').classList.add('edit-mode');document.getElementById('cancelBankEdit').style.display='block';
+}
+function cancelBankEdit(){document.getElementById('bankEditId').value='';document.getElementById('bankFormTitle').textContent='➕ إضافة حساب بنكي';document.getElementById('bankSubmitBtn').textContent='✚ إضافة الحساب';document.getElementById('bankSubmitBtn').classList.remove('edit-mode');document.getElementById('cancelBankEdit').style.display='none';}
+function delBank(id){if(!confirm('حذف هذا الحساب؟'))return;banks=banks.filter(function(b){return b.id!==id;});renderBanks();render();autoSave();toast('🗑 تم الحذف','#DC2626');}
+function renderBanks(){
+  var total=0;banks.forEach(function(b){total+=b.balance||0;});
+  document.getElementById('bankTotal').textContent=fmt(total);document.getElementById('bankCount').textContent=banks.length;
+  var list=document.getElementById('banksList');
+  if(!banks.length){list.innerHTML='<div class="empty"><i>🏦</i>أضف أول حساب!</div>';return;}
+  list.innerHTML=banks.map(function(b){
+    var pct=total>0?((b.balance/total)*100).toFixed(1):0,clr=TYPE_CLR[b.type]||'#64748B';
+    return '<div class="item-card" style="border-right:4px solid '+clr+'"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div><div style="font-weight:900;font-size:.88rem">🏦 '+b.name+'</div>'+(b.holder?'<div style="font-size:.68rem;color:var(--neutral)">'+b.holder+'</div>':'')+' </div><span style="background:'+clr+'22;color:'+clr+';border-radius:20px;padding:2px 8px;font-size:.62rem;font-weight:700">'+TYPE_MAP[b.type]+'</span></div>'+(b.number?'<div style="font-size:.7rem;color:var(--neutral);margin-bottom:7px;direction:ltr;text-align:right">'+b.number+'</div>':'')+'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-size:.68rem;color:var(--neutral)">الرصيد</div><div style="font-size:.95rem;font-weight:900;color:'+clr+';direction:ltr">'+fmt(b.balance)+'</div></div><div style="background:var(--lgray);border-radius:3px;height:5px;margin-bottom:7px"><div style="background:'+clr+';height:5px;border-radius:3px;width:'+pct+'%"></div></div><div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:.62rem;color:var(--neutral)">'+(b.notes||'')+'</div><div style="display:flex;gap:4px"><button class="edit-btn" onclick="editBank('+b.id+')">✏️</button><button class="del-btn" onclick="delBank('+b.id+')">🗑</button></div></div></div>';
+  }).join('');
+}
+
+// ═══ EXPENSES ═══
+function initExpenseFilters(){
+  var sel=document.getElementById('expFilterMonth');if(!sel)return;
+  var now=new Date(),opts='<option value="">كل الأشهر</option>';
+  for(var i=0;i<12;i++)opts+='<option value="'+(i+1)+'"'+(i===now.getMonth()?' selected':'')+'>'+MONTHS[i]+'</option>';
+  sel.innerHTML=opts;
+}
+function submitExp(){
+  var editId=document.getElementById('expEditId').value,name=document.getElementById('eName').value.trim(),amount=parseFloat(document.getElementById('eAmount').value)||0;
+  if(!name){alert('اكتب وصف المصروف');return;}if(!amount){alert('اكتب المبلغ');return;}
+  var data={name:name,cat:document.getElementById('eCat').value,amount:amount,date:document.getElementById('eDate').value,notes:document.getElementById('eNotes').value.trim()};
+  if(editId){var id=parseInt(editId);expenses=expenses.map(function(e){return e.id===id?Object.assign({},e,data):e;});cancelExpEdit();toast('✏️ تم التعديل!','#1D4ED8');}
+  else{data.id=enid++;expenses.push(data);['eName','eAmount','eNotes'].forEach(function(i){document.getElementById(i).value='';});document.getElementById('eCat').value='salary';document.getElementById('eDate').value=new Date().toISOString().split('T')[0];toast('✅ تمت الإضافة!');}
+  renderExpenses();render();autoSave();
+}
+function editExp(id){
+  var e=expenses.find(function(x){return x.id===id;});if(!e)return;
+  document.getElementById('expEditId').value=id;document.getElementById('eName').value=e.name||'';document.getElementById('eCat').value=e.cat||'other';document.getElementById('eAmount').value=e.amount||'';document.getElementById('eDate').value=e.date||'';document.getElementById('eNotes').value=e.notes||'';
+  document.getElementById('expFormTitle').textContent='✏️ تعديل: '+e.name;document.getElementById('expSubmitBtn').textContent='💾 حفظ';document.getElementById('expSubmitBtn').classList.add('edit-mode');document.getElementById('cancelExpEdit').style.display='block';
+}
+function cancelExpEdit(){document.getElementById('expEditId').value='';document.getElementById('expFormTitle').textContent='➕ إضافة مصروف';document.getElementById('expSubmitBtn').textContent='✚ إضافة المصروف';document.getElementById('expSubmitBtn').classList.remove('edit-mode');document.getElementById('cancelExpEdit').style.display='none';}
+function delExp(id){if(!confirm('حذف هذا المصروف؟'))return;expenses=expenses.filter(function(e){return e.id!==id;});renderExpenses();render();autoSave();toast('🗑 تم الحذف','#DC2626');}
+function renderExpenses(){
+  initExpenseFilters();
+  var now=new Date(),curM=now.getMonth()+1,curY=now.getFullYear(),tTotal=0,tMonth=0,tYear=0;
+  expenses.forEach(function(e){tTotal+=e.amount||0;if(e.date){var y=parseInt(e.date.substring(0,4)),m=parseInt(e.date.substring(5,7));if(y===curY)tYear+=e.amount||0;if(y===curY&&m===curM)tMonth+=e.amount||0;}});
+  document.getElementById('expThisMonth').textContent=fmt(tMonth);document.getElementById('expThisYear').textContent=fmt(tYear);document.getElementById('expTotal').textContent=fmt(tTotal);
+  var fM=parseInt(document.getElementById('expFilterMonth').value)||0,fC=document.getElementById('expFilterCat').value||'';
+  var filtered=expenses.filter(function(e){if(fC&&e.cat!==fC)return false;if(fM&&e.date&&parseInt(e.date.substring(5,7))!==fM)return false;return true;}).sort(function(a,b){return(b.date||'')>(a.date||'')?1:-1;});
+  var catTotals={},totalF=filtered.reduce(function(s,e){return s+e.amount;},0);
+  filtered.forEach(function(e){catTotals[e.cat]=(catTotals[e.cat]||0)+e.amount;});
+  var catBar='';
+  if(totalF>0){
+    catBar='<div class="rep-box" style="margin-bottom:11px"><div class="rep-title">توزيع حسب الفئة</div>';
+    Object.keys(catTotals).forEach(function(cat){var pct=((catTotals[cat]/totalF)*100).toFixed(1),clr=CAT_CLR[cat]||'#64748B';catBar+='<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:2px"><span style="font-weight:600">'+CAT_MAP[cat]+'</span><span style="direction:ltr;color:'+clr+';font-weight:700">'+fmt(catTotals[cat])+' ('+pct+'%)</span></div><div style="background:var(--lgray);border-radius:3px;height:6px"><div style="background:'+clr+';height:6px;border-radius:3px;width:'+pct+'%"></div></div></div>';});
+    catBar+='</div>';
+  }
+  var list=document.getElementById('expList');
+  if(!filtered.length){list.innerHTML=catBar+'<div class="empty"><i>💸</i>لا توجد مصاريف</div>';return;}
+  list.innerHTML=catBar+filtered.map(function(e){var clr=CAT_CLR[e.cat]||'#64748B';return'<div class="item-card" style="border-right:4px solid '+clr+';display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap"><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><span style="font-size:.6rem;background:'+clr+'22;color:'+clr+';padding:1px 7px;border-radius:20px;font-weight:700">'+CAT_MAP[e.cat]+'</span></div><div style="font-weight:700;font-size:.85rem">'+e.name+'</div><div style="font-size:.64rem;color:var(--neutral);margin-top:1px">'+(e.date?e.date.split('-').reverse().join('/'):'—')+(e.notes?' · '+e.notes:'')+'</div></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><div style="font-size:.95rem;font-weight:900;color:#DC2626;direction:ltr">'+fmt(e.amount)+'</div><div style="display:flex;gap:3px"><button class="edit-btn" onclick="editExp('+e.id+')">✏️</button><button class="del-btn" onclick="delExp('+e.id+')">🗑</button></div></div></div>';}).join('');
+}
+
+// ═══ SUMMARY ═══
+function renderSummary(){
+  var com=parseFloat(document.getElementById('compct').value)||0,p1=parseFloat(document.getElementById('p1pct').value)||0,p2=parseFloat(document.getElementById('p2pct').value)||0;
+  ['s-compct','calc-com'].forEach(function(i){document.getElementById(i).textContent=com;});
+  ['s-p1pct','calc-p1'].forEach(function(i){document.getElementById(i).textContent=p1;});
+  ['s-p2pct','calc-p2'].forEach(function(i){document.getElementById(i).textContent=p2;});
+  var tCost=0,tSell=0,tProfit=0,tCom=0,tNet=0,tP1=0,tP2=0,tSold=0;
+  deals.forEach(function(d){var cost=d.buy+(d.fees||0);tCost+=cost;if((d.stat==='sold')&&d.sell>0){var pr=d.sell-cost,sh=calcShares(pr);tSell+=d.sell;tProfit+=pr;tCom+=sh.com;tNet+=sh.net;tP1+=sh.p1;tP2+=sh.p2;tSold++;}});
+  document.getElementById('s-cost').textContent=fmt(tCost);document.getElementById('s-sell').textContent=fmt(tSell);document.getElementById('s-profit').textContent=fmt(tProfit);document.getElementById('s-count').textContent=deals.length;document.getElementById('s-sold').textContent=tSold+' صفقة';document.getElementById('s-com').textContent=fmt(tCom);document.getElementById('s-net').textContent=fmt(tNet);document.getElementById('s-p1').textContent=fmt(tP1);document.getElementById('s-p2').textContent=fmt(tP2);
+}
+
+// ═══ REPORTS ═══
+function getYears(){var y={};deals.forEach(function(d){if(d.sellDate)y[d.sellDate.substring(0,4)]=1;if(d.date)y[d.date.substring(0,4)]=1;});var l=Object.keys(y).sort().reverse();if(!l.length)l=[new Date().getFullYear()+''];return l;}
+function populateYears(){var sel=document.getElementById('rYear');if(!sel)return;var cur=sel.value,yrs=getYears();sel.innerHTML=yrs.map(function(y){return'<option value="'+y+'">'+y+'</option>';}).join('');if(cur&&yrs.indexOf(cur)>=0)sel.value=cur;}
+function renderReports(){
+  populateYears();var sel=document.getElementById('rYear');if(!sel)return;var year=sel.value;
+  var mo=[];for(var i=0;i<12;i++)mo.push({sell:0,cost:0,profit:0,com:0,p1:0,p2:0,count:0});
+  deals.forEach(function(d){if((d.stat==='sold')&&d.sell>0&&d.sellDate&&d.sellDate.substring(0,4)===year){var mi=parseInt(d.sellDate.substring(5,7))-1,cost=d.buy+(d.fees||0),pr=d.sell-cost,sh=calcShares(pr);mo[mi].sell+=d.sell;mo[mi].cost+=cost;mo[mi].profit+=pr;mo[mi].com+=sh.com;mo[mi].p1+=sh.p1;mo[mi].p2+=sh.p2;mo[mi].count++;}});
+  var tS=0,tC=0,tP=0,tCom=0,tP1=0,tP2=0,tN=0;mo.forEach(function(m){tS+=m.sell;tC+=m.cost;tP+=m.profit;tCom+=m.com;tP1+=m.p1;tP2+=m.p2;tN+=m.count;});
+  var roi=tC>0?((tP/tC)*100).toFixed(1):0;
+  var kpis=[{l:'المبيعات',v:fmt(tS),c:'#3B82F6'},{l:'التكلفة',v:fmt(tC),c:'#B8860B'},{l:'الأرباح',v:fmt(tP),c:'#16A34A'},{l:'الوسيط',v:fmt(tCom),c:'#F59E0B'},{l:'ش.أول',v:fmt(tP1),c:'#7C3AED'},{l:'ش.ثاني',v:fmt(tP2),c:'#EA580C'},{l:'الصفقات',v:tN+' صفقة',c:'#10B981'},{l:'العائد',v:roi+'%',c:'#8B5CF6'}];
+  document.getElementById('rCards').innerHTML=kpis.map(function(k){return'<div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:9px 11px;border-top:3px solid '+k.c+'"><div style="font-size:.58rem;color:var(--neutral);font-weight:600;margin-bottom:2px">'+k.l+'</div><div style="font-size:.82rem;font-weight:900;direction:ltr;text-align:right;color:'+k.c+'">'+k.v+'</div></div>';}).join('');
+  var maxV=Math.max.apply(null,mo.map(function(m){return m.sell;}))||1,bH='',bL='';
+  mo.forEach(function(m,i){var sH=Math.round((m.sell/maxV)*95),pH=Math.round((m.profit/maxV)*95),cH=Math.round((m.com/maxV)*95);bH+='<div style="flex:1;display:flex;align-items:flex-end;gap:1px;justify-content:center"><div style="width:30%;height:'+sH+'px;background:#3B82F6;border-radius:2px 2px 0 0;min-height:'+(m.sell?2:0)+'px"></div><div style="width:30%;height:'+pH+'px;background:#16A34A;border-radius:2px 2px 0 0;min-height:'+(m.profit?2:0)+'px"></div><div style="width:30%;height:'+cH+'px;background:#F59E0B;border-radius:2px 2px 0 0;min-height:'+(m.com?2:0)+'px"></div></div>';bL+='<div style="flex:1;text-align:center;font-size:.48rem;color:var(--neutral)">'+MONTHS[i].substring(0,3)+'</div>';});
+  document.getElementById('barChart').innerHTML=bH;document.getElementById('barLabels').innerHTML=bL;
+  var total=tP||1,segs=[{l:'الوسيط',v:tCom,c:'#F59E0B'},{l:'ش.أول',v:tP1,c:'#7C3AED'},{l:'ش.ثاني',v:tP2,c:'#EA580C'}],cx=80,cy=80,r=60,r2=35,tau=2*Math.PI,st=-Math.PI/2,paths='';
+  segs.forEach(function(s){if(s.v<=0)return;var ang=(s.v/total)*tau,en=st+ang,x1=cx+r*Math.cos(st),y1=cy+r*Math.sin(st),x2=cx+r*Math.cos(en),y2=cy+r*Math.sin(en),x3=cx+r2*Math.cos(en),y3=cy+r2*Math.sin(en),x4=cx+r2*Math.cos(st),y4=cy+r2*Math.sin(st),lg=ang>Math.PI?1:0;paths+='<path d="M'+x1.toFixed(1)+','+y1.toFixed(1)+' A'+r+','+r+' 0 '+lg+',1 '+x2.toFixed(1)+','+y2.toFixed(1)+' L'+x3.toFixed(1)+','+y3.toFixed(1)+' A'+r2+','+r2+' 0 '+lg+',0 '+x4.toFixed(1)+','+y4.toFixed(1)+' Z" fill="'+s.c+'"/>';st=en;});
+  document.getElementById('donutSvg').innerHTML=paths+'<circle cx="80" cy="80" r="28" fill="white"/><text x="80" y="76" text-anchor="middle" font-size="9" fill="#64748B" font-family="Cairo">الربح</text><text x="80" y="89" text-anchor="middle" font-size="8" fill="#1E293B" font-weight="bold" font-family="Cairo">'+fmt(tP)+'</text>';
+  document.getElementById('donutLegend').innerHTML=segs.map(function(s){var pct=tP>0?((s.v/tP)*100).toFixed(1):0;return'<div style="display:flex;align-items:center;gap:5px;font-size:.7rem"><div style="width:8px;height:8px;border-radius:2px;background:'+s.c+';flex-shrink:0"></div><div><div style="font-weight:700">'+s.l+'</div><div style="color:var(--neutral)">'+fmt(s.v)+' ('+pct+'%)</div></div></div>';}).join('');
+  var hasData=false,rows=mo.map(function(m,i){if(!m.sell&&!m.count)return'';hasData=true;var r2v=m.cost>0?((m.profit/m.cost)*100).toFixed(1):0,rc=parseFloat(r2v)>0?'#16A34A':parseFloat(r2v)<0?'#DC2626':'#64748B';return'<tr><td class="rtd" style="font-weight:700">'+MONTHS[i]+'</td><td class="rtd" style="text-align:center">'+m.count+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#3B82F6;font-weight:700">'+fmt(m.sell)+'</td><td class="rtd" style="direction:ltr;text-align:right">'+fmt(m.cost)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#16A34A;font-weight:700">'+fmt(m.profit)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#D97706">'+fmt(m.com)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#7C3AED">'+fmt(m.p1)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#EA580C">'+fmt(m.p2)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:'+rc+';font-weight:700">'+r2v+'%</td></tr>';}).join('');
+  var rT=tC>0?((tP/tC)*100).toFixed(1):0;
+  var tot='<tr style="background:var(--dark)"><td class="rtd" style="color:#D4A017;font-weight:900">الإجمالي</td><td class="rtd" style="color:#fff;text-align:center">'+tN+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#93C5FD;font-weight:900">'+fmt(tS)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#fff">'+fmt(tC)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#4ADE80;font-weight:900">'+fmt(tP)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#FCD34D">'+fmt(tCom)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#C4B5FD">'+fmt(tP1)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#FDBA74">'+fmt(tP2)+'</td><td class="rtd" style="direction:ltr;text-align:right;color:#6EE7B7;font-weight:900">'+rT+'%</td></tr>';
+  var empty='<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--neutral)">لا توجد صفقات مباعة في '+year+'</td></tr>';
+  document.getElementById('rTable').innerHTML='<thead><tr><th class="rth">الشهر</th><th class="rth">صفقات</th><th class="rth">المبيعات</th><th class="rth">التكلفة</th><th class="rth">الربح</th><th class="rth">الوسيط</th><th class="rth">ش.أول</th><th class="rth">ش.ثاني</th><th class="rth">العائد%</th></tr></thead><tbody>'+(hasData?rows:empty)+tot+'</tbody>';
+}
+
+// ═══ PRINT ═══
+function printDeal(id){
+  var d=deals.find(function(x){return x.id===id;});if(!d)return;
+  var cost=d.buy+(d.fees||0),isSold=(d.stat==='sold')&&d.sell>0,profit=isSold?d.sell-cost:0,sh=isSold?calcShares(profit):{com:0,net:0,p1:0,p2:0};
+  var sM={sold:'مباعة',held:'محتفظ بها',reserved:'محجوزة'},roi=cost>0&&isSold?((profit/cost)*100).toFixed(1):0;
+  var html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;direction:rtl;padding:24px;color:#1E293B}h1{font-size:1.2rem;color:#B8860B;border-bottom:2px solid #B8860B;padding-bottom:6px;margin-bottom:14px}h2{font-size:.88rem;background:#F1F5F9;padding:6px 10px;border-radius:5px;margin:12px 0 6px}.row{display:flex;justify-content:space-between;padding:5px 3px;border-bottom:1px solid #E2E8F0;font-size:.85rem}.lbl{color:#64748B;font-weight:600}.val{font-weight:700;direction:ltr}.pv{color:#16A34A}.com{color:#D97706}.p1{color:#7C3AED}.p2{color:#EA580C}.ft{margin-top:20px;text-align:center;color:#94A3B8;font-size:.68rem}@media print{@page{margin:1cm}}</style></head><body>'
+    +'<h1>🏗️ تقرير صفقة — '+d.name+'</h1><h2>📋 بيانات الصفقة</h2><div class="row"><span class="lbl">اسم القطعة</span><span class="val">'+d.name+'</span></div>'+(d.loc?'<div class="row"><span class="lbl">الموقع</span><span class="val">'+d.loc+'</span></div>':'')+(d.area?'<div class="row"><span class="lbl">المساحة</span><span class="val">'+d.area.toLocaleString()+' م²</span></div>':'')+'<div class="row"><span class="lbl">تاريخ الشراء</span><span class="val">'+(d.date?d.date.split('-').reverse().join('/'):'—')+'</span></div><div class="row"><span class="lbl">الحالة</span><span class="val">'+sM[d.stat]+'</span></div><h2>💰 التكاليف</h2><div class="row"><span class="lbl">سعر الشراء</span><span class="val">'+fmt(d.buy)+'</span></div>'+(d.fees?'<div class="row"><span class="lbl">مصاريف</span><span class="val">'+fmt(d.fees)+'</span></div>':'')+'<div class="row"><span class="lbl">التكلفة الإجمالية</span><span class="val">'+fmt(cost)+'</span></div>'+(isSold?'<h2>📈 نتائج البيع</h2><div class="row"><span class="lbl">تاريخ البيع</span><span class="val">'+(d.sellDate?d.sellDate.split('-').reverse().join('/'):'—')+'</span></div><div class="row"><span class="lbl">سعر البيع</span><span class="val">'+fmt(d.sell)+'</span></div><div class="row"><span class="lbl">الربح الكلي</span><span class="val pv">'+fmt(profit)+'</span></div><div class="row"><span class="lbl">نسبة العائد</span><span class="val pv">'+roi+'%</span></div><h2>🤝 توزيع الأرباح</h2><div class="row"><span class="lbl">عمولة الوسيط</span><span class="val com">'+fmt(sh.com)+'</span></div><div class="row"><span class="lbl">صافي الربح</span><span class="val">'+fmt(sh.net)+'</span></div><div class="row"><span class="lbl">الشريك الأول</span><span class="val p1">'+fmt(sh.p1)+'</span></div><div class="row"><span class="lbl">الشريك الثاني</span><span class="val p2">'+fmt(sh.p2)+'</span></div>':'')+'<div class="ft">تاريخ الطباعة: '+new Date().toLocaleDateString('ar-EG')+'</div><script>window.onload=function(){window.print();window.onfocus=function(){window.close();}}<\/script></body></html>';
+  var w=window.open('','_blank');if(w){w.document.write(html);w.document.close();}else{alert('فعّل النوافذ المنبثقة');}
+}
+function printPartners(){
+  var tProfit=0,tCom=0,tNet=0,tP1=0,tP2=0,tSold=0,rows='';
+  deals.forEach(function(d){if((d.stat==='sold')&&d.sell>0){var cost=d.buy+(d.fees||0),pr=d.sell-cost,sh=calcShares(pr);tProfit+=pr;tCom+=sh.com;tNet+=sh.net;tP1+=sh.p1;tP2+=sh.p2;tSold++;rows+='<tr><td>'+d.name+'</td><td>'+(d.sellDate?d.sellDate.split('-').reverse().join('/'):'—')+'</td><td style="direction:ltr;text-align:right">'+fmt(pr)+'</td><td style="direction:ltr;text-align:right;color:#D97706">'+fmt(sh.com)+'</td><td style="direction:ltr;text-align:right">'+fmt(sh.net)+'</td><td style="direction:ltr;text-align:right;color:#7C3AED">'+fmt(sh.p1)+'</td><td style="direction:ltr;text-align:right;color:#EA580C">'+fmt(sh.p2)+'</td></tr>';}});
+  if(!tSold){alert('لا توجد صفقات مباعة');return;}
+  var html='<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;direction:rtl;padding:20px;color:#1E293B}h1{font-size:1.1rem;color:#B8860B;border-bottom:2px solid #B8860B;padding-bottom:6px;margin-bottom:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}.box{border:1px solid #CBD5E1;border-radius:6px;padding:8px 11px;border-top-width:3px}.bl{font-size:.65rem;color:#64748B;font-weight:600;margin-bottom:2px}.bv{font-size:.88rem;font-weight:900;direction:ltr;text-align:right}table{width:100%;border-collapse:collapse;font-size:.78rem}th{background:#1A1A2E;color:#D4A017;padding:6px 8px;text-align:right}td{padding:5px 8px;border-bottom:1px solid #E2E8F0}tr:nth-child(even){background:#F8FAFC}.tot td{background:#1A1A2E;color:#fff;font-weight:700}.ft{margin-top:16px;text-align:center;color:#94A3B8;font-size:.65rem}@media print{@page{margin:1cm;size:A4 landscape}}</style></head><body>'
+    +'<h1>💼 كشف حساب الشركاء</h1><div class="grid"><div class="box" style="border-top-color:#16A34A"><div class="bl">إجمالي الأرباح</div><div class="bv" style="color:#16A34A">'+fmt(tProfit)+'</div></div><div class="box" style="border-top-color:#F59E0B"><div class="bl">عمولة الوسيط</div><div class="bv" style="color:#D97706">'+fmt(tCom)+'</div></div><div class="box" style="border-top-color:#10B981"><div class="bl">صافي الأرباح</div><div class="bv">'+fmt(tNet)+'</div></div><div class="box" style="border-top-color:#7C3AED"><div class="bl">الشريك الأول</div><div class="bv" style="color:#7C3AED">'+fmt(tP1)+'</div></div><div class="box" style="border-top-color:#EA580C"><div class="bl">الشريك الثاني</div><div class="bv" style="color:#EA580C">'+fmt(tP2)+'</div></div><div class="box" style="border-top-color:#3B82F6"><div class="bl">الصفقات المباعة</div><div class="bv" style="color:#3B82F6">'+tSold+' صفقة</div></div></div><table><thead><tr><th>الصفقة</th><th>تاريخ البيع</th><th>الربح</th><th>الوسيط</th><th>صافي</th><th>ش.أول</th><th>ش.ثاني</th></tr></thead><tbody>'+rows+'<tr class="tot"><td>الإجمالي</td><td>'+tSold+' صفقة</td><td style="direction:ltr;text-align:right">'+fmt(tProfit)+'</td><td style="direction:ltr;text-align:right;color:#FCD34D">'+fmt(tCom)+'</td><td style="direction:ltr;text-align:right">'+fmt(tNet)+'</td><td style="direction:ltr;text-align:right;color:#C4B5FD">'+fmt(tP1)+'</td><td style="direction:ltr;text-align:right;color:#FDBA74">'+fmt(tP2)+'</td></tr></tbody></table><div class="ft">تاريخ الطباعة: '+new Date().toLocaleDateString('ar-EG')+'</div><script>window.onload=function(){window.print();window.onfocus=function(){window.close();}}<\/script></body></html>';
+  var w=window.open('','_blank');if(w){w.document.write(html);w.document.close();}else{alert('فعّل النوافذ المنبثقة');}
+}
+
+render();
+</script>
+</body>
+</html>
